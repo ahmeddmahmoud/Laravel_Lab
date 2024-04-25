@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\api\PostController;
+use App\Http\Controllers\api\UserController;
 
 
 /*
@@ -25,3 +26,5 @@ Route::post('/posts',[PostController::class, "store"]);
 Route::get('/posts/{id}',[PostController::class, "show"]);
 Route::put('/posts/{id}',[PostController::class, "update"]);
 Route::delete('/posts/{id}',[PostController::class, "destroy"]);
+Route::get('/users',[UserController::class, "index"]);
+

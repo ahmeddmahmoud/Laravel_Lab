@@ -5,6 +5,7 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use App\Http\Requests\StorePostRequest;
+use App\Http\Resources\PostResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,9 +13,10 @@ use Illuminate\Support\Facades\Storage;
 class PostController extends Controller
 {
     //
-    function index(){
-        $posts = Post::all();
-        return $posts;
+    function index(Request $request){
+        // $posts = Post::all();
+        $posts=Post::with('user')->paginate($request->input('per_page', 5));
+        return PostResource::collection($posts);
     }
 
     function store(StorePostRequest $request){
@@ -33,32 +35,24 @@ class PostController extends Controller
 
     function show($id){
         $post=Post::find($id);
-        return $post;
+        return new PostResource($post);;
     }
 
-    public function update($id, Request $request )
-    {
-        $request->validate([
-            'title' => 'required',
-            'body' => 'required|min:2',
-            'photo' => 'image|mimes:jpg,jpeg,png|max:2048',
-        ]);
-
-        try {
-            $post = Post::findOrFail($id);
-            $post->title = $request->title;
-            $post->body = $request->body;
-            $post->user_id = $request->user_id;
-            if ($request->hasFile('photo')) {
-                Storage::delete($post->photo);
-                $path = $request->file('photo')->store('public/photos');
-                $post->photo = $path;
-            }
-            $post->save();
-            return "Post updated successfully";
-        } catch (\Exception $e) {
-            return "Failed to update post: " . $e->getMessage();
+    function update($id, StorePostRequest $request){
+        $post = Post::find($id);
+        if (!$post) {
+            return response("Post not found", 404);
         }
+        $validData = $request->validated();
+        if ($request->hasFile('photo')) {
+            if ($post->photo) {
+                Storage::delete($post->photo);
+            }
+            $path = $request->file('photo')->store('public/photos');
+            $validData['photo'] = $path;
+        }
+        $post->update($validData);
+        return "Post was updated successfully";
     }
 
     function destroy($id){
