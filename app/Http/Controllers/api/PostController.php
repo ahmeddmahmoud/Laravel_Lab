@@ -15,7 +15,7 @@ class PostController extends Controller
     //
     function index(Request $request){
         // $posts = Post::all();
-        $posts=Post::with('user')->paginate($request->input('per_page', 5));
+        $posts = Post::with('user')->paginate($request->input('per_page', 5));
         return PostResource::collection($posts);
     }
 
@@ -34,12 +34,12 @@ class PostController extends Controller
     }
 
     function show($id){
-        $post=Post::find($id);
+        $post = Post::with('user')->findOrFail($id);
         return new PostResource($post);;
     }
 
     function update($id, StorePostRequest $request){
-        $post = Post::find($id);
+        $post = Post::with('user')->findOrFail($id);
         if (!$post) {
             return response("Post not found", 404);
         }

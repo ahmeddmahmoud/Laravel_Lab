@@ -13,7 +13,7 @@ class UserController extends Controller
     //
     function index()
     {
-        $users=User::all();
+        $users = User::paginate(10);
         return UserResource::collection($users);
     }
 }
